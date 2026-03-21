@@ -1,0 +1,68 @@
+services:
+  s3-storage:
+    image: quay.io/minio/minio:latest
+    container_name: s3
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - ./infra/minio-data:/data
+    command: server /data --console-address ":9001"
+
+  rabbit-mq:
+    image: rabbitmq:3-management
+    container_name: message-broker
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - ./infra/rabbitmq-data:/var/lib/rabbitmq
+
+  mail-dev:
+    image: maildev/maildev:latest
+    container_name: mail-dev
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "1080:1080"
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./infra/redis-data:/data
+
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: redis-insight
+    restart: unless-stopped
+    ports:
+      - "5540:5540"
+    volumes:
+      - ./infra/redisinsight-data:/data
+    depends_on:
+      - redis
+  
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - ./infra/postgres-data:/var/lib/postgresql
+      - ./postgres-configs:/docker-entrypoint-initdb.d
