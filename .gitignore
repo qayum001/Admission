@@ -10,3 +10,6 @@
 /httpRequests/
 /.idea
 /infra
+**/bin
+**/obj
+**/.idea
