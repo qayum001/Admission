@@ -1,68 +1,133 @@
 services:
+  mail-manager:
+    container_name: ${MAIL_MANAGER_CONTAINER_NAME}
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: src/Mail/Dockerfile
+    ports:
+      - "${MAIL_MANAGER_HOST_PORT}:${MAIL_MANAGER_CONTAINER_PORT}"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ASPNETCORE_URLS: http://+:${MAIL_MANAGER_CONTAINER_PORT}
+      MessagingParams__Host: ${RABBITMQ_HOST}
+      MessagingParams__Port: ${RABBITMQ_PORT}
+      MessagingParams__User: ${RABBITMQ_DEFAULT_USER}
+      MessagingParams__Password: ${RABBITMQ_DEFAULT_PASS}
+      SmtpOptions__Host: ${MAILDEV_HOST}
+      SmtpOptions__Port: ${MAILDEV_SMTP_PORT}
+      SmtpOptions__HostName: ${SMTP_HOST_NAME}
+      SmtpOptions__HostEmail: ${SMTP_HOST_EMAIL}
+      SmtpOptions__PoolSize: ${SMTP_POOL_SIZE}
+      ConnectionStrings__Redis: ${REDIS_CONNECTION_STRING}
+      ConnectionStrings__MailInbox: ${MAIL_INBOX_CONNECTION_STRING}
+      Redis__InstanceName: ${REDIS_INSTANCE_NAME}
+    depends_on:
+      rabbit-mq:
+        condition: service_healthy
+      mail-dev:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
   s3-storage:
     image: quay.io/minio/minio:latest
-    container_name: s3
+    container_name: ${MINIO_CONTAINER_NAME}
     restart: unless-stopped
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "${MINIO_API_PORT}:9000"
+      - "${MINIO_CONSOLE_PORT}:9001"
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     volumes:
-      - ./infra/minio-data:/data
+      - minio_data:/data
     command: server /data --console-address ":9001"
 
   rabbit-mq:
     image: rabbitmq:3-management
-    container_name: message-broker
+    container_name: ${RABBITMQ_CONTAINER_NAME}
     restart: unless-stopped
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "${RABBITMQ_PORT}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT}:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: admin
-      RABBITMQ_DEFAULT_PASS: admin
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
     volumes:
-      - ./infra/rabbitmq-data:/var/lib/rabbitmq
+      - rabbitmq_data:/var/lib/rabbitmq
 
   mail-dev:
     image: maildev/maildev:latest
-    container_name: mail-dev
+    container_name: ${MAILDEV_CONTAINER_NAME}
     restart: unless-stopped
     ports:
-      - "1025:1025"
-      - "1080:1080"
+      - "${MAILDEV_SMTP_PORT}:1025"
+      - "${MAILDEV_WEB_PORT}:1080"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:1080/"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   redis:
     image: redis:latest
-    container_name: redis
+    container_name: ${REDIS_CONTAINER_NAME}
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     volumes:
-      - ./infra/redis-data:/data
+      - redis_data:/data
 
   redis-insight:
     image: redis/redisinsight:latest
-    container_name: redis-insight
+    container_name: ${REDIS_INSIGHT_CONTAINER_NAME}
     restart: unless-stopped
     ports:
-      - "5540:5540"
+      - "${REDIS_INSIGHT_PORT}:5540"
     volumes:
-      - ./infra/redisinsight-data:/data
+      - redisinsight_data:/data
     depends_on:
       - redis
-  
+
   postgres:
-    image: postgres:latest
-    container_name: postgres
+    image: postgres:${POSTGRES_IMAGE_TAG}
+    container_name: ${POSTGRES_CONTAINER_NAME}
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT}:5432"
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     volumes:
-      - ./infra/postgres-data:/var/lib/postgresql
+      - postgres_data_pg18:/var/lib/postgresql
       - ./postgres-configs:/docker-entrypoint-initdb.d
+
+volumes:
+  minio_data:
+  rabbitmq_data:
+  redis_data:
+  redisinsight_data:
+  postgres_data_pg18:

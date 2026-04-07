@@ -9,3 +9,7 @@ GRANT USAGE, CREATE ON SCHEMA public TO auth_user;
 \connect dictionary
 ALTER SCHEMA public OWNER TO dictionary_user;
 GRANT USAGE, CREATE ON SCHEMA public TO dictionary_user;
+
+\connect mail_inbox
+ALTER SCHEMA public OWNER TO mail_inbox_user;
+GRANT USAGE, CREATE ON SCHEMA public TO mail_inbox_user;

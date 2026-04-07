@@ -1,7 +1,0 @@
-<Solution>
-  <Project Path="Administration/Admissioni.Administration/Admissioni.Administration.csproj" />
-  <Project Path="Admission/Admission/Admission.csproj" />
-  <Project Path="Auth/Admission.Auth/Admission.Auth.csproj" />
-  <Project Path="Dictionary/Admission.Dictionary/Admission.Dictionary.csproj" />
-  <Project Path="Mail/Admission.MailManager/Admission.MailManager.csproj" />
-</Solution>

@@ -13,3 +13,5 @@
 **/bin
 **/obj
 **/.idea
+*.user
+src/.env

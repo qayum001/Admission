@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="src/Administration/Admission.Administration.Mvc/Admission.Administration.Mvc.csproj" />
+  <Project Path="src/Admission/Admission.Api/Admission.Api.csproj" />
+  <Project Path="src/Auth/Admission.Auth/Admission.Auth.csproj" />
+  <Project Path="src/Dictionary/Admission.Dictionary/Admission.Dictionary.csproj" />
+  <Project Path="src/Mail/Admission.MailManager/Admission.MailManager.csproj" />
+  <Project Path="src/MessagingContracts/MailContracts/MailContracts.csproj" />
+</Solution>
