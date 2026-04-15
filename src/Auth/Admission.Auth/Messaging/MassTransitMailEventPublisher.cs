@@ -5,24 +5,10 @@ namespace Admission.Auth.Messaging;
 
 public sealed class MassTransitMailEventPublisher(IPublishEndpoint publishEndpoint) : IMailEventPublisher
 {
-    public Task PublishNewRegistrationAsync(string email, CancellationToken cancellationToken = default)
-    {
-        return publishEndpoint.Publish(
-            new NewRegistrationMessage(ToRecipient(email)),
-            cancellationToken);
-    }
-
     public Task PublishManagerCreatedAsync(string email, string roleName, string temporaryPassword, CancellationToken cancellationToken = default)
     {
         return publishEndpoint.Publish(
             new ManagerCreatedMessage(ToRecipient(email), roleName, temporaryPassword),
-            cancellationToken);
-    }
-
-    public Task PublishStaffPasswordResetAsync(string email, string roleName, string temporaryPassword, CancellationToken cancellationToken = default)
-    {
-        return publishEndpoint.Publish(
-            new StaffPasswordResetMessage(ToRecipient(email), roleName, temporaryPassword),
             cancellationToken);
     }
 
@@ -37,13 +23,6 @@ public sealed class MassTransitMailEventPublisher(IPublishEndpoint publishEndpoi
     {
         return publishEndpoint.Publish(
             new PasswordResetMessage(ToRecipient(email), resetToken),
-            cancellationToken);
-    }
-
-    public Task PublishStaffInvitationAsync(string email, string roleName, string invitationToken, Guid? facultyId, CancellationToken cancellationToken = default)
-    {
-        return publishEndpoint.Publish(
-            new StaffInvitationMessage(ToRecipient(email), roleName, invitationToken, facultyId),
             cancellationToken);
     }
 

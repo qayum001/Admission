@@ -9,7 +9,6 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
     public DbSet<AuthUser> Users => Set<AuthUser>();
     public DbSet<RefreshSession> RefreshSessions => Set<RefreshSession>();
     public DbSet<UserActionToken> UserActionTokens => Set<UserActionToken>();
-    public DbSet<StaffInvitation> StaffInvitations => Set<StaffInvitation>();
     public DbSet<SigningKeyRecord> SigningKeys => Set<SigningKeyRecord>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
