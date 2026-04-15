@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Staff invitation</title>
+</head>
+<body>
+    <p>Hello, {{ ReceiverName }}.</p>
+    <p>You have been invited to join Admission staff.</p>
+    <p>Role: <strong>{{ RoleName }}</strong></p>
+    {{ if FacultyId != null }}
+    <p>Faculty: <strong>{{ FacultyId }}</strong></p>
+    {{ end }}
+    <p>Invitation token:</p>
+    <p><strong>{{ InvitationToken }}</strong></p>
+</body>
+</html>

@@ -1,3 +1,4 @@
+using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using MimeKit.Text;
@@ -6,7 +7,6 @@ namespace Admission.MailManager.Mailing;
 
 public class MailService(
     IOptions<SmtpOptions> options,
-    ISmtpClientPool smtpClientPool,
     ILogger<MailService> logger) : IMailService
 {
     public async Task Send(string to, string name, string subject, string body)
@@ -17,17 +17,23 @@ public class MailService(
         message.Subject = subject;
         message.Body = new TextPart(TextFormat.Html) { Text = body };
 
-        await using var lease = await smtpClientPool.RentAsync();
+        using var client = new SmtpClient();
 
         try
         {
             logger.LogDebug("Sending email to {RecipientEmail} with subject {Subject}", to, subject);
-            await lease.Client.SendAsync(message);
+            await client.ConnectAsync(options.Value.Host, options.Value.Port, false);
+            await client.SendAsync(message);
+            await client.DisconnectAsync(true);
         }
         catch
         {
-            lease.Invalidate();
-            logger.LogWarning("SMTP client marked as invalid after failure while sending email to {RecipientEmail}", to);
+            if (client.IsConnected)
+            {
+                await client.DisconnectAsync(true);
+            }
+
+            logger.LogWarning("SMTP send failed for {RecipientEmail}", to);
             throw;
         }
     }

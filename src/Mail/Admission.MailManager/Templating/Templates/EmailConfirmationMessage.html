@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Email confirmation</title>
+</head>
+<body>
+    <p>Hello, {{ ReceiverName }}.</p>
+    <p>Use this token to confirm your email:</p>
+    <p><a href="http://localhost:5279/api/auth/email-confirmation/{{ ConfirmationToken }}">http://localhost:5279/api/auth/email-confirmation/{{ ConfirmationToken }}</a></p>
+</body>
+</html>

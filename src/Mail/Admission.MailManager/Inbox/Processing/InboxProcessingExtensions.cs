@@ -1,7 +1,6 @@
-using Admission.MailManager.Inbox.Handlers;
 using Admission.MailManager.Inbox.Processing.Jobs;
-using MailContracts;
 using Quartz;
+using System.Reflection;
 
 namespace Admission.MailManager.Inbox.Processing;
 
@@ -16,11 +15,7 @@ public static class InboxProcessingExtensions
         services.AddScoped<IInboxMessageDispatcher, InboxMessageDispatcher>();
         services.AddScoped<IInboxProcessingService, InboxProcessingService>();
 
-        services.AddScoped<IInboxMessageHandler<NewRegistrationMessage>, NewRegistrationInboxMessageHandler>();
-        services.AddScoped<IInboxMessageHandler<AdmissionStatusChangedMessage>, AdmissionStatusChangedInboxMessageHandler>();
-        services.AddScoped<IInboxMessageHandler<AdmissionAssignedToManagerMessage>, AdmissionAssignedToManagerInboxMessageHandler>();
-        services.AddScoped<IInboxMessageHandler<AdmissionManagerAssignedToApplicantMessage>, AdmissionManagerAssignedToApplicantInboxMessageHandler>();
-        services.AddScoped<IInboxMessageHandler<ManagerCreatedMessage>, ManagerCreatedInboxMessageHandler>();
+        RegisterInboxHandlers(services, typeof(InboxProcessingExtensions).Assembly);
 
         services.AddQuartz(quartz =>
         {
@@ -38,5 +33,26 @@ public static class InboxProcessingExtensions
         });
 
         services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
+    }
+
+    private static void RegisterInboxHandlers(IServiceCollection services, Assembly assembly)
+    {
+        var handlerInterfaceType = typeof(Handlers.IInboxMessageHandler<>);
+
+        var registrations = assembly
+            .GetTypes()
+            .Where(type => type is { IsAbstract: false, IsInterface: false })
+            .SelectMany(
+                type => type.GetInterfaces()
+                    .Where(@interface =>
+                        @interface.IsGenericType &&
+                        @interface.GetGenericTypeDefinition() == handlerInterfaceType)
+                    .Select(@interface => new { ServiceType = @interface, ImplementationType = type }))
+            .ToArray();
+
+        foreach (var registration in registrations)
+        {
+            services.AddScoped(registration.ServiceType, registration.ImplementationType);
+        }
     }
 }

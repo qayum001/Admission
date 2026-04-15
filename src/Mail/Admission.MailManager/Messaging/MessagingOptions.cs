@@ -25,6 +25,10 @@ public static class MessagingExtensions
             config.AddConsumer<AdmissionManagerAssignedToApplicantConsumer>();
             config.AddConsumer<AdmissionAssignedToManagerConsumer>();
             config.AddConsumer<ManagerCreatedConsumer>();
+            config.AddConsumer<StaffPasswordResetConsumer>();
+            config.AddConsumer<EmailConfirmationConsumer>();
+            config.AddConsumer<PasswordResetConsumer>();
+            config.AddConsumer<StaffInvitationConsumer>();
             
             config.UsingRabbitMq((ctx, cfg) =>
             {

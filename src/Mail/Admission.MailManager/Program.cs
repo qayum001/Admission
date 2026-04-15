@@ -9,11 +9,15 @@ builder.Services.AddMessaging(builder.Configuration);
 builder.Services.AddInboxPersistence(builder.Configuration);
 builder.Services.RegisterSmtp(builder.Configuration);
 builder.Services.AddInboxProcessing(builder.Configuration);
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
 await app.ApplyInboxMigrationsAsync();
 
-app.MapGet("/ping", () => "pong");
+app.MapHealthChecks("/health");
 
 app.Run();
+// alba jasperfx
+// reqnroll 
+// BDD
