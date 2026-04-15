@@ -1,4 +1,70 @@
 services:
+  dictionary:
+    container_name: ${DICTIONARY_CONTAINER_NAME}
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: src/Dictionary/Dockerfile
+    ports:
+      - "${DICTIONARY_HOST_PORT}:${DICTIONARY_CONTAINER_PORT}"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ASPNETCORE_URLS: http://+:${DICTIONARY_CONTAINER_PORT}
+      ConnectionStrings__Dictionary: ${DICTIONARY_CONNECTION_STRING}
+      ConnectionStrings__DictionaryOutbox: ${DICTIONARY_OUTBOX_CONNECTION_STRING}
+      MessagingParams__Host: ${RABBITMQ_HOST}
+      MessagingParams__Port: ${RABBITMQ_PORT}
+      MessagingParams__User: ${RABBITMQ_DEFAULT_USER}
+      MessagingParams__Password: ${RABBITMQ_DEFAULT_PASS}
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "http://127.0.0.1:${DICTIONARY_CONTAINER_PORT}/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    depends_on:
+      rabbit-mq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+  
+  auth:
+    container_name: ${AUTH_CONTAINER_NAME}
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: src/Auth/Dockerfile
+    ports:
+      - "${AUTH_HOST_PORT}:${AUTH_CONTAINER_PORT}"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ASPNETCORE_URLS: http://+:${AUTH_CONTAINER_PORT}
+      ConnectionStrings__Auth: ${AUTH_CONNECTION_STRING}
+      Auth__Issuer: ${AUTH_ISSUER}
+      Auth__Audience: ${AUTH_AUDIENCE}
+      Security__TokenPepper: ${AUTH_TOKEN_PEPPER}
+      MessagingParams__Host: ${RABBITMQ_HOST}
+      MessagingParams__Port: ${RABBITMQ_PORT}
+      MessagingParams__User: ${RABBITMQ_DEFAULT_USER}
+      MessagingParams__Password: ${RABBITMQ_DEFAULT_PASS}
+      AdminSeed__Enabled: ${AUTH_ADMIN_SEED_ENABLED}
+      AdminSeed__Email: ${AUTH_ADMIN_SEED_EMAIL}
+      AdminSeed__Password: ${AUTH_ADMIN_SEED_PASSWORD}
+      AuthDebug__ExposeActionTokens: ${AUTH_DEBUG_EXPOSE_ACTION_TOKENS}
+    volumes:
+      - auth_dataprotection_keys:/root/.aspnet/DataProtection-Keys
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:${AUTH_CONTAINER_PORT}/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    depends_on:
+      rabbit-mq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
   mail-manager:
     container_name: ${MAIL_MANAGER_CONTAINER_NAME}
     restart: unless-stopped
@@ -18,10 +84,15 @@ services:
       SmtpOptions__Port: ${MAILDEV_SMTP_PORT}
       SmtpOptions__HostName: ${SMTP_HOST_NAME}
       SmtpOptions__HostEmail: ${SMTP_HOST_EMAIL}
-      SmtpOptions__PoolSize: ${SMTP_POOL_SIZE}
       ConnectionStrings__Redis: ${REDIS_CONNECTION_STRING}
       ConnectionStrings__MailInbox: ${MAIL_INBOX_CONNECTION_STRING}
       Redis__InstanceName: ${REDIS_INSTANCE_NAME}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:${MAIL_MANAGER_CONTAINER_PORT}/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
     depends_on:
       rabbit-mq:
         condition: service_healthy
@@ -126,6 +197,7 @@ services:
       - ./postgres-configs:/docker-entrypoint-initdb.d
 
 volumes:
+  auth_dataprotection_keys:
   minio_data:
   rabbitmq_data:
   redis_data:
