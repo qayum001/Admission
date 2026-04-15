@@ -1,38 +1,37 @@
-using System.Net.Http.Headers;
-using System.Text;
 using Admission.Dictionary.Abstractions;
+using Admission.Dictionary.Client;
 using Admission.Dictionary.Middlewares;
+using Admission.Dictionary.Persistence;
 using Admission.Dictionary.Services;
-using Dictionary.Integration;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddHttpClient<DictionaryClient>((sp, client) =>
-{
-    var config = sp.GetRequiredService<IConfiguration>();
-
-    client.BaseAddress = new Uri(config["DictionaryApi:BaseUrl"]!);
-
-    var rawCreds = $"{config["DictionaryApi:Login"]}:{config["DictionaryApi:Password"]}";
-    var base64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(rawCreds));
-
-    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64);
-});
+builder.Services.RegisterDictionaryClient();
+builder.Services.AddDictionaryPersistence(builder.Configuration);
 
 builder.Services.AddScoped<IDictionaryService, DictionaryService>();
+builder.Services.AddScoped<IImportService, ImportService>();
+builder.Services.AddScoped<ILocalDictionaryService, LocalDictionaryService>();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddHealthChecks();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+await app.ApplyDictionaryMigrationsAsync();
+
 if (app.Environment.IsDevelopment())
 {
+    app.UseSwagger();
+    app.UseSwaggerUI();
     app.MapOpenApi();
 }
 
 app.UseMiddleware<ExceptionHandlerMiddleware>();
-
+app.MapHealthChecks("/health");
 app.UseHttpsRedirection();
 app.MapControllers();
 app.Run();

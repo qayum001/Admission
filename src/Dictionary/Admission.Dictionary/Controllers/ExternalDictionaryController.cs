@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Admission.Dictionary.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/dictionary")]
 public class ExternalDictionaryController(IDictionaryService dictionaryService) : ControllerBase
 {
     [HttpGet("education_levels")]
