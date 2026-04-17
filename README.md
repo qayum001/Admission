@@ -24,3 +24,5 @@
 - `5540` - Redis Insight
 - `9000` - MinIO API (S3)
 - `9001` - MinIO Console
+
+Note: Если при первом запуске упал `postgres`, то надо просто заново запустить `docker compose up --build -d`
