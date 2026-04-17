@@ -1,40 +1,26 @@
-### Работа с внешним справочником
-> Был использован `NSwag` для генерации клиента.
+# Запуск
 
-1. Установить `NSwag`:
-`dotnet tool install --global NSwag.ConsoleCore`
+1. Надо склонировать репозиторий
+2. Заходим в /Placeholder-Task-4472
+3. Сам запуск:
+   - Если есть докер - `docker compose up --build -d`
+   - Если нету - то запустить по идее возможно, но я не гарантирую что сервисы найдут друг друга
+4. Открыть ссылки которые будут ниже, и начать проверку системы
+   - Auth swagger - http://localhost:5279/swagger/index.html
+   - Dictionary swagger - http://localhost:5280/swagger/index.html
+   - Mail Dev - http://localhost:1080
 
-2. Сгенерировать клиента:
-`nswag openapi2csclient /input:https://1c-mockup.kreosoft.space/swagger/v1/swagger.json /output:Generated\DictionaryClient.cs /classname:DictionaryClient /namespace:Dictionary.Integration /GenerateClientClasses:true /GenerateDtoTypes:true /OperationGenerationMode:MultipleClientsFromPathSegments`
-
-### Docker Compose
-Часто используемые команды для локального развертывания и обновления системы:
-
-1. Первый запуск всех сервисов:
-`docker compose up -d --build`
-
-2. Пересобрать и поднять только backend-сервисы:
-`docker compose up -d --build auth mail-manager`
-
-3. Пересобрать и поднять только один сервис:
-`docker compose up -d --build auth`
-`docker compose up -d --build mail-manager`
-
-4. Поднять сервисы без пересборки:
-`docker compose up -d`
-
-5. Посмотреть состояние контейнеров:
-`docker compose ps`
-
-6. Посмотреть логи конкретного сервиса:
-`docker compose logs -f auth`
-`docker compose logs -f mail-manager`
-
-7. Остановить систему:
-`docker compose down`
-
-8. Остановить систему и удалить volumes:
-`docker compose down -v`
-
-9. Проверить итоговый статус и healthcheck контейнеров:
-`docker ps`
+## ВАЖНО!!!
+докер требудет что следующие порты были незаняты: 
+- `5279` - Auth API
+- `5280` - Dictionary API
+- `5278` - Mail Manager API
+- `1080` - MailDev Web UI
+- `1025` - MailDev SMTP
+- `5672` - RabbitMQ AMQP
+- `15672` - RabbitMQ Management UI
+- `5432` - PostgreSQL
+- `6379` - Redis
+- `5540` - Redis Insight
+- `9000` - MinIO API (S3)
+- `9001` - MinIO Console
