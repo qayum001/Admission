@@ -35,8 +35,14 @@ public sealed record UpdateMyEmailRequest(string Email);
 
 public sealed record StaffCreateRequest(
     string Email,
-    string Role,
+    StaffCreationRoles Role,
     Guid? FacultyId);
+
+public enum StaffCreationRoles
+{
+    GeneralManager,
+    Manager
+}
 
 public sealed record StaffCreateResponse(Guid UserId, string Role, string TemporaryPassword, string Message);
 

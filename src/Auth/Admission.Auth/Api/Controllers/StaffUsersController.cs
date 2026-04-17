@@ -1,5 +1,6 @@
 using Admission.Auth.Api.Contracts;
 using Admission.Auth.Application;
+using Admission.Auth.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,6 +17,7 @@ public sealed class StaffUsersController(AuthService authService) : ControllerBa
     /// <summary>
     /// Creates a new staff user account.
     /// </summary>
+    /// <param name="request">Available roles: GeneralManager, Manager</param>
     [HttpPost]
     public async Task<ActionResult<StaffCreateResponse>> Create([FromBody] StaffCreateRequest request, CancellationToken cancellationToken)
     {
@@ -38,7 +40,7 @@ public sealed class StaffUsersController(AuthService authService) : ControllerBa
     /// </summary>
     [HttpGet]
     [Authorize(Roles = "GeneralManager,Admin")]
-    public async Task<ActionResult<StaffListResponse>> List([FromQuery] string? role, [FromQuery] int page = 1, [FromQuery] int size = 20, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<StaffListResponse>> List([FromQuery] UserRole? role, [FromQuery] int page = 1, [FromQuery] int size = 20, CancellationToken cancellationToken = default)
     {
         var response = await authService.GetStaffListAsync(role, page, size, cancellationToken);
         return Ok(response);

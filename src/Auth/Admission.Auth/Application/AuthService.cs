@@ -200,7 +200,7 @@ public sealed class AuthService(
 
     public async Task<StaffCreateResponse> CreateStaffAsync(StaffCreateRequest request, CancellationToken cancellationToken = default)
     {
-        var role = ParseRole(request.Role);
+        var role = GetStaffRole(request.Role);
         EnsureStaffRole(role);
         EnsureFacultyRule(role, request.FacultyId);
 
@@ -235,6 +235,16 @@ public sealed class AuthService(
             temporaryPassword,
             "Staff user created");
     }
+
+    private static UserRole GetStaffRole(StaffCreationRoles role)
+    {
+        return role switch
+        {
+            StaffCreationRoles.GeneralManager => UserRole.GeneralManager,
+            StaffCreationRoles.Manager => UserRole.Manager,
+            _ => throw new ArgumentOutOfRangeException(nameof(role), role, null)
+        };
+    }
     
     public async Task<MessageResponse> DeleteStaffAsync(Guid userId, CancellationToken cancellationToken = default)
     {
@@ -247,7 +257,7 @@ public sealed class AuthService(
         return new MessageResponse("Staff user deleted successfully");
     }
 
-    public async Task<StaffListResponse> GetStaffListAsync(string? role, int page, int size, CancellationToken cancellationToken = default)
+    public async Task<StaffListResponse> GetStaffListAsync(UserRole? role, int page, int size, CancellationToken cancellationToken = default)
     {
         page = Math.Max(page, 1);
         size = Math.Clamp(size, 1, 100);
@@ -255,9 +265,9 @@ public sealed class AuthService(
         var query = dbContext.Users.AsNoTracking()
             .Where(x => x.Role == UserRole.Manager || x.Role == UserRole.GeneralManager);
 
-        if (!string.IsNullOrWhiteSpace(role))
+        if (role is not null)
         {
-            var parsedRole = ParseRole(role);
+            var parsedRole = role.Value;
             EnsureStaffRole(parsedRole);
             query = query.Where(x => x.Role == parsedRole);
         }
@@ -447,17 +457,7 @@ public sealed class AuthService(
     }
 
     private static string NormalizeEmail(string email) => email.Trim().ToUpperInvariant();
-
-    private static UserRole ParseRole(string role)
-    {
-        if (!Enum.TryParse<UserRole>(role, ignoreCase: true, out var parsedRole))
-        {
-            throw new AppException("Unknown role.", StatusCodes.Status400BadRequest);
-        }
-
-        return parsedRole;
-    }
-
+    
     private static void EnsureStaffRole(UserRole role)
     {
         if (role is UserRole.Manager or UserRole.GeneralManager)

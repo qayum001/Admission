@@ -11,7 +11,6 @@ services:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
       ASPNETCORE_URLS: http://+:${DICTIONARY_CONTAINER_PORT}
       ConnectionStrings__Dictionary: ${DICTIONARY_CONNECTION_STRING}
-      ConnectionStrings__DictionaryOutbox: ${DICTIONARY_OUTBOX_CONNECTION_STRING}
       MessagingParams__Host: ${RABBITMQ_HOST}
       MessagingParams__Port: ${RABBITMQ_PORT}
       MessagingParams__User: ${RABBITMQ_DEFAULT_USER}

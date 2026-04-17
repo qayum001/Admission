@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
+using System.Text.Json.Serialization;
 using Admission.Auth.Api.Swagger;
 using Admission.Auth.Application;
 using Admission.Auth.Domain.Entities;
@@ -92,7 +93,11 @@ public static class DependencyInjection
 
         services.AddAuthorization();
 
-        services.AddControllers();
+        services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
         services.AddOpenApi();
         services.AddHealthChecks();
         services.AddEndpointsApiExplorer();
