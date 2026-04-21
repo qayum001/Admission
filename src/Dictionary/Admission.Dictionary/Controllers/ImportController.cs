@@ -1,5 +1,6 @@
 using Admission.Dictionary.Abstractions;
 using Admission.Dictionary.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Admission.Dictionary.Controllers;
@@ -8,6 +9,7 @@ namespace Admission.Dictionary.Controllers;
 [Route("api/import")]
 public class ImportController (IImportService importService) : ControllerBase
 {
+    [Authorize(Roles = "Admin")]
     [HttpPost("education_levels")]
     public async Task<ActionResult<IEnumerable<ImportedEducationLevelDto>>> ImportEducationLevelsAsync([FromBody] List<int> educationLevelsIds)
     {
@@ -17,7 +19,8 @@ public class ImportController (IImportService importService) : ControllerBase
 
         return Ok("Looks like education levels already were imported");
     }
-
+    
+    [Authorize(Roles = "Admin")]
     [HttpPost("document_types")]
     public async Task<ActionResult<IEnumerable<ImportedEducationDocumentTypeDto>>> ImportDocumentTypesAsync([FromBody] List<Guid> documentTypesIds)
     {
@@ -28,6 +31,7 @@ public class ImportController (IImportService importService) : ControllerBase
         return Ok("Looks like document types already were imported");
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("faculties")]
     public async Task<ActionResult<IEnumerable<ImportedFacultyDto>>> ImportFacultiesAsync([FromBody] List<Guid> facultiesIds)
     {
@@ -38,6 +42,7 @@ public class ImportController (IImportService importService) : ControllerBase
         return Ok("Looks like faculties already were imported");
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("programs")]
     public async Task<ActionResult<IEnumerable<ImportedProgramDto>>> ImportProgramsAsync([FromBody] List<ImportProgramsParams> importProgramsParams)
     {

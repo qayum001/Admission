@@ -1,4 +1,5 @@
 using Admission.Dictionary.Abstractions;
+using Admission.Dictionary.Auth;
 using Admission.Dictionary.Client;
 using Admission.Dictionary.Middlewares;
 using Admission.Dictionary.Persistence;
@@ -8,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.RegisterDictionaryClient();
 builder.Services.AddDictionaryPersistence(builder.Configuration);
+builder.Services.ConfigureAuth(builder.Configuration);
 
 builder.Services.AddScoped<IDictionaryService, DictionaryService>();
 builder.Services.AddScoped<IImportService, ImportService>();
@@ -29,6 +31,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
     app.MapOpenApi();
 }
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseMiddleware<ExceptionHandlerMiddleware>();
 app.MapHealthChecks("/health");
