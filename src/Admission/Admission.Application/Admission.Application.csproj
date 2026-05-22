@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="LiteBus" Version="4.3.0" />
+      <PackageReference Include="LiteBus.Extensions.Microsoft.DependencyInjection" Version="4.3.0" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="10.0.7" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Admission.Domain\Admission.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Admissions\Commands\" />
+      <Folder Include="Admissions\Queries\" />
+      <Folder Include="Managers\Events\" />
+    </ItemGroup>
+
+</Project>

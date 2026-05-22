@@ -1,4 +1,4 @@
-using Admission.Dictionary.Entities;
+using Admission.Domain.Entities.Dictionary;
 using Microsoft.EntityFrameworkCore;
 
 namespace Admission.Dictionary.Persistence;

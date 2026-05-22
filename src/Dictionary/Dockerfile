@@ -3,11 +3,13 @@ WORKDIR /src
 
 COPY ["src/Dictionary/Admission.Dictionary/Admission.Dictionary.csproj", "src/Dictionary/Admission.Dictionary/"]
 COPY ["src/MessagingContracts/MailContracts/MailContracts.csproj", "src/MessagingContracts/MailContracts/"]
+COPY ["src/Admission/Admission.Domain/Admission.Domain.csproj", "src/Admission/Admission.Domain/"]
 
 RUN dotnet restore "src/Dictionary/Admission.Dictionary/Admission.Dictionary.csproj"
 
 COPY ["src/Dictionary/Admission.Dictionary/", "src/Dictionary/Admission.Dictionary/"]
 COPY ["src/MessagingContracts/MailContracts/", "src/MessagingContracts/MailContracts/"]
+COPY ["src/Admission/Admission.Domain/", "src/Admission/Admission.Domain/"]
 
 WORKDIR /src/src/Dictionary/Admission.Dictionary
 RUN dotnet publish "Admission.Dictionary.csproj" -c Release -o /app/publish /p:UseAppHost=false

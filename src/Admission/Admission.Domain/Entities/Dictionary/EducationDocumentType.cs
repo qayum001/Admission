@@ -1,4 +1,4 @@
-namespace Admission.Dictionary.Entities;
+namespace Admission.Domain.Entities.Dictionary;
 
 public class EducationDocumentType
 {

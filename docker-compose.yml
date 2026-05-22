@@ -1,4 +1,49 @@
 services:
+  admission:
+    container_name: ${ADMISSION_CONTAINER_NAME}
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: src/Admission/Dockerfile
+    ports:
+      - "${ADMISSION_HOST_PORT}:${ADMISSION_CONTAINER_PORT}"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ASPNETCORE_URLS: http://+:${ADMISSION_CONTAINER_PORT}
+      ConnectionStrings__Admission: ${ADMISSION_CONNECTION_STRING}
+      MessagingParams__Host: ${RABBITMQ_HOST}
+      MessagingParams__Port: ${RABBITMQ_PORT}
+      MessagingParams__User: ${RABBITMQ_DEFAULT_USER}
+      MessagingParams__Password: ${RABBITMQ_DEFAULT_PASS}
+      AuthConfiguration__MetadataAddress: http://${AUTH_CONTAINER_NAME}:${AUTH_CONTAINER_PORT}/.well-known/openid-configuration
+      AuthConfiguration__Issuer: ${AUTH_ISSUER}
+      AuthConfiguration__Audience: ${AUTH_AUDIENCE}
+      AuthConfiguration__RoleClaimType: role
+      DictionaryApi__BaseUrl: http://${DICTIONARY_CONTAINER_NAME}:${DICTIONARY_CONTAINER_PORT}
+      S3__ServiceUrl: http://${MINIO_CONTAINER_NAME}:${MINIO_API_CONTAINER_PORT}
+      S3__AccessKey: ${MINIO_ROOT_USER}
+      S3__SecretKey: ${MINIO_ROOT_PASSWORD}
+      S3__BucketName: ${MINIO_BUCKET_NAME}
+      S3__ForcePathStyle: true
+      S3__UseHttp: true
+      S3__PublicServiceUrl: ${MINIO_PUBLIC_URL}
+      AdmissionPrograms__MaxSelectedPrograms: ${ADMISSION_MAX_PROGRAMS}
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "http://127.0.0.1:${ADMISSION_CONTAINER_PORT}/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    depends_on:
+      rabbit-mq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      s3-storage:
+        condition: service_started
+      auth:
+        condition: service_healthy
+
   dictionary:
     container_name: ${DICTIONARY_CONTAINER_NAME}
     restart: unless-stopped
@@ -83,9 +128,7 @@ services:
       SmtpOptions__Port: ${MAILDEV_SMTP_PORT}
       SmtpOptions__HostName: ${SMTP_HOST_NAME}
       SmtpOptions__HostEmail: ${SMTP_HOST_EMAIL}
-      ConnectionStrings__Redis: ${REDIS_CONNECTION_STRING}
       ConnectionStrings__MailInbox: ${MAIL_INBOX_CONNECTION_STRING}
-      Redis__InstanceName: ${REDIS_INSTANCE_NAME}
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:${MAIL_MANAGER_CONTAINER_PORT}/health"]
       interval: 10s
@@ -97,8 +140,6 @@ services:
         condition: service_healthy
       mail-dev:
         condition: service_healthy
-      redis:
-        condition: service_healthy
       postgres:
         condition: service_healthy
 
@@ -107,15 +148,17 @@ services:
     container_name: ${MINIO_CONTAINER_NAME}
     restart: unless-stopped
     ports:
-      - "${MINIO_API_PORT}:9000"
+      - "${MINIO_API_PORT}:${MINIO_API_CONTAINER_PORT}"
       - "${MINIO_CONSOLE_PORT}:9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_NOTIFY_WEBHOOK_ENABLE_PRIMARY: "on"
+      MINIO_NOTIFY_WEBHOOK_ENDPOINT_PRIMARY: "http://admission:8080/api/files/s3-event"
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
-
+  
   rabbit-mq:
     image: rabbitmq:3-management
     container_name: ${RABBITMQ_CONTAINER_NAME}
@@ -149,32 +192,6 @@ services:
       retries: 10
       start_period: 10s
 
-  redis:
-    image: redis:latest
-    container_name: ${REDIS_CONTAINER_NAME}
-    restart: unless-stopped
-    ports:
-      - "${REDIS_PORT}:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
-    volumes:
-      - redis_data:/data
-
-  redis-insight:
-    image: redis/redisinsight:latest
-    container_name: ${REDIS_INSIGHT_CONTAINER_NAME}
-    restart: unless-stopped
-    ports:
-      - "${REDIS_INSIGHT_PORT}:5540"
-    volumes:
-      - redisinsight_data:/data
-    depends_on:
-      - redis
-
   postgres:
     image: postgres:${POSTGRES_IMAGE_TAG}
     container_name: ${POSTGRES_CONTAINER_NAME}
@@ -199,6 +216,4 @@ volumes:
   auth_dataprotection_keys:
   minio_data:
   rabbitmq_data:
-  redis_data:
-  redisinsight_data:
   postgres_data_pg18:

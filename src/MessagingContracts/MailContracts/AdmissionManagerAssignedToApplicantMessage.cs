@@ -1,4 +1,7 @@
 namespace MailContracts;
 
-public record AdmissionManagerAssignedToApplicantMessage(MailRecipient To, Guid AdmissionId) 
-    : BaseMail(To);
+public record AdmissionManagerAssignedToApplicantMessage(
+    MailRecipient Applicant,
+    MailRecipient Manager,
+    Guid AdmissionId)
+    : BaseMail(Applicant);

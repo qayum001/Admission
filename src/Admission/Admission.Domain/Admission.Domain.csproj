@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Update="Entities\Dictionary\EducationDocumentType.cs">
+        <DependentUpon>EducationLevel.cs</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
+</Project>

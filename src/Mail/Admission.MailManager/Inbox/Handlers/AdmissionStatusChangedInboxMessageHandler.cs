@@ -13,8 +13,6 @@ public sealed class AdmissionStatusChangedInboxMessageHandler(
     {
         var model = new AdmissionStatusChangedTemplateModel(
             message.Applicant.Name,
-            message.AdmissionNumber,
-            message.PreviousStatusName,
             message.CurrentStatusName);
         var body = emailTemplateService.Render<AdmissionStatusChangedMessage>(model);
 

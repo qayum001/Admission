@@ -1,6 +1,13 @@
 <Solution>
   <Project Path="src/Administration/Admission.Administration.Mvc/Admission.Administration.Mvc.csproj" />
   <Project Path="src/Admission/Admission.Api/Admission.Api.csproj" />
+  <Project Path="src/Admission/Admission.Application/Admission.Application.csproj" />
+  <Project Path="src/Admission/Admission.DictionaryClient/Admission.DictionaryClient.csproj" />
+  <Project Path="src/Admission/Admission.Domain/Admission.Domain.csproj" />
+  <Project Path="src/Admission/Admission.FileStorage/Admission.FileStorage.csproj" />
+  <Project Path="src/Admission/Admission.Infrastructure/Admission.Infrastructure.csproj" />
+  <Project Path="src/Admission/Admission.Messaging/Admission.Messaging.csproj" />
+  <Project Path="src/Admission/Admission.Persistence/Admission.Persistence.csproj" />
   <Project Path="src/Auth/Admission.Auth/Admission.Auth.csproj" />
   <Project Path="src/Dictionary/Admission.Dictionary/Admission.Dictionary.csproj" />
   <Project Path="src/Mail/Admission.MailManager/Admission.MailManager.csproj" />

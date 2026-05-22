@@ -1,5 +1,5 @@
 using Admission.Dictionary.Abstractions;
-using Admission.Dictionary.Entities;
+using Admission.Domain.Entities.Dictionary;
 using Admission.Dictionary.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,12 +30,41 @@ public class LocalDictionaryService(DictionaryDbContext context) : ILocalDiction
             .ToListAsync();
     }
 
-    public async Task<List<EducationProgram>> GetProgramsAsync()
+    public async Task<List<EducationProgram>> GetProgramsAsync(
+        Guid? facultyId = null,
+        int? educationLevelId = null,
+        string? language = null,
+        string? educationForm = null,
+        string? nameOrCode = null,
+        int page = 1,
+        int pageSize = 20)
     {
-        return await context.Programs
+        var query = context.Programs
             .Include(e => e.Faculty)
             .Include(e => e.EducationLevel)
+            .AsQueryable();
+
+        if (facultyId.HasValue)
+            query = query.Where(e => e.Faculty.Id == facultyId.Value);
+
+        if (educationLevelId.HasValue)
+            query = query.Where(e => e.EducationLevel.Id == educationLevelId.Value);
+
+        if (!string.IsNullOrWhiteSpace(language))
+            query = query.Where(e => e.Language != null && e.Language.ToLower().Contains(language.ToLower()));
+
+        if (!string.IsNullOrWhiteSpace(educationForm))
+            query = query.Where(e => e.EducationForm != null && e.EducationForm.ToLower().Contains(educationForm.ToLower()));
+
+        if (!string.IsNullOrWhiteSpace(nameOrCode))
+            query = query.Where(e =>
+                (e.Name != null && e.Name.ToLower().Contains(nameOrCode.ToLower())) ||
+                (e.Code != null && e.Code.ToLower().Contains(nameOrCode.ToLower())));
+
+        return await query
             .OrderBy(e => e.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
     }
 

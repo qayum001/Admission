@@ -1,6 +1,6 @@
 using Admission.Dictionary.Abstractions;
 using Admission.Dictionary.DTOs;
-using Admission.Dictionary.Entities;
+using Admission.Domain.Entities.Dictionary;
 using Admission.Dictionary.Persistence;
 using Microsoft.EntityFrameworkCore;
 using DictionaryIntegration = global::Dictionary.Integration;

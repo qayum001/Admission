@@ -1,5 +1,5 @@
 using Admission.Dictionary.Abstractions;
-using Admission.Dictionary.Entities;
+using Admission.Domain.Entities.Dictionary;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Admission.Dictionary.Controllers;
@@ -40,9 +40,21 @@ public class LocalDictionaryController(ILocalDictionaryService localDictionarySe
     }
 
     [HttpGet("programs")]
-    public async Task<ActionResult<List<EducationProgram>>> GetProgramsAsync()
+    public async Task<ActionResult<List<EducationProgram>>> GetProgramsAsync(
+        [FromQuery] Guid? facultyId = null,
+        [FromQuery] int? educationLevelId = null,
+        [FromQuery] string? language = null,
+        [FromQuery] string? educationForm = null,
+        [FromQuery] string? nameOrCode = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
     {
-        var res = await localDictionaryService.GetProgramsAsync();
+        if (page < 1) page = 1;
+        if (pageSize < 1 || pageSize > 100) pageSize = 20;
+
+        var res = await localDictionaryService.GetProgramsAsync(
+            facultyId, educationLevelId, language, educationForm, nameOrCode, page, pageSize);
+
         if (res.Count > 0)
             return Ok(res);
 

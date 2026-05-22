@@ -12,15 +12,15 @@ public sealed class AdmissionAssignedToManagerInboxMessageHandler(
     public Task HandleAsync(AdmissionAssignedToManagerMessage message, CancellationToken cancellationToken = default)
     {
         var model = new AdmissionAssignedToManagerTemplateModel(
-            message.To.Name,
-            message.Id.ToString(),
-            message.To.Name,
-            message.To.Email);
+            message.Manager.Name,
+            message.AdmissionId.ToString(),
+            message.Applicant.Name,
+            message.Applicant.Email);
         var body = emailTemplateService.Render<AdmissionAssignedToManagerMessage>(model);
 
         return mailService.Send(
-            message.To.Email,
-            message.To.Name,
+            message.Manager.Email,
+            message.Manager.Name,
             "Admission assigned",
             body);
     }
